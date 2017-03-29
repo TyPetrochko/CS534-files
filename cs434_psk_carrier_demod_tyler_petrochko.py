@@ -13,11 +13,11 @@ def compl_to_idx(comp):
     elif(comp.real > 0 and comp.imag < 0):
         return 1
 
-def bpsk():
+def bpsk(out_file, symbols_file):
     correct = 0
     incorrect = 0
-    bpsk = scipy.fromfile('bpsk_out', dtype=scipy.complex64)
-    bpsk_sym = scipy.fromfile('bpsk_symbols_out', dtype=scipy.complex64)
+    bpsk = scipy.fromfile(out_file, dtype=scipy.complex64)
+    bpsk_sym = scipy.fromfile(symbols_file, dtype=scipy.complex64)
 
     length = min(len(bpsk), len(bpsk_sym))
 
@@ -32,10 +32,11 @@ def bpsk():
         if(block_i == 63):
             expected = block_total
             actual = bpsk_sym[block_index].real
+            print 'actual: ', actual, ' expected: ', expected
             if((expected > 0 and actual > 0) or (expected < 0 and actual < 0)):
                 correct += 1
             else:
-                incorrect != 1
+                incorrect += 1
             i += 1
             block_i = 0
             block_total = 0
@@ -43,13 +44,15 @@ def bpsk():
         else:
             i += 1
             block_i += 1
-    print 'Error rate for bpsk is ', incorrect / (incorrect + correct)
+    print 'Incorrect: ', incorrect
+    print 'Correct: ', correct
+    print 'Error rate for bpsk is ', float(incorrect) / (incorrect + correct)
 
-def qpsk():
+def qpsk(out_file, symbols_file):
     correct = 0
     incorrect = 0
-    qpsk = scipy.fromfile('qpsk_out', dtype=scipy.complex64)
-    qpsk_sym = scipy.fromfile('qpsk_symbols_out', dtype=scipy.complex64)
+    qpsk = scipy.fromfile(out_file, dtype=scipy.complex64)
+    qpsk_sym = scipy.fromfile(symbols_file, dtype=scipy.complex64)
 
     length = min(len(qpsk), len(qpsk_sym))
 
@@ -63,14 +66,12 @@ def qpsk():
     block_total11 = 0
 
     while(i < length):
-        block_total11 += qpsk[i].real * math.cos(2 * math.pi * (block_i / 4) + ((math.pi * 1)/4))
-        block_total10 += qpsk[i].real * math.cos(2 * math.pi * (block_i / 4) + ((math.pi * 3)/4))
-        block_total00 += qpsk[i].real * math.cos(2 * math.pi * (block_i / 4) + ((math.pi * 5)/4))
-        block_total01 += qpsk[i].real * math.cos(2 * math.pi * (block_i / 4) + ((math.pi * 7)/4))
+        block_total11 += qpsk[i].real * math.cos(2 * math.pi * (float(block_i) / 4) + ((math.pi * 1)/4))
+        block_total10 += qpsk[i].real * math.cos(2 * math.pi * (float(block_i) / 4) + ((math.pi * 3)/4))
+        block_total00 += qpsk[i].real * math.cos(2 * math.pi * (float(block_i) / 4) + ((math.pi * 5)/4))
+        block_total01 += qpsk[i].real * math.cos(2 * math.pi * (float(block_i) / 4) + ((math.pi * 7)/4))
 
         best = max(block_total00, block_total01, block_total10, block_total11)
-
-        print 'comparing ', block_total11, block_total10, block_total00, block_total01, ' with ', qpsk_sym[block_index], compl_to_idx(qpsk_sym[block_index])
 
         if(best == block_total00 and compl_to_idx(qpsk_sym[block_index]) == 0):
             correct += 1
@@ -91,20 +92,20 @@ def qpsk():
         else:
             i += 1
             block_i += 1
-    print 'Error rate for qpsk is ', incorrect / (incorrect + correct)
+    print 'Error rate for qpsk is ', float(incorrect) / (incorrect + correct)
 
 # TODO actually use filename param
-if(len(sys.argv) != 3):
-    print 'Usage: [bpsk | qpsk] <filename>'
+if(len(sys.argv) != 4):
+    print 'Usage: cs434_psk_carrier_demod_tyler_petrochko [bpsk | qpsk] <output_file> <symbols_file>'
     exit()
 if(sys.argv[1] == 'bpsk'):
     print 'Analyzing bpsk'
-    bpsk()
+    bpsk(sys.argv[2], sys.argv[3])
 elif(sys.argv[1] == 'qpsk'):
     print 'Analyzing qpsk'
-    qpsk()
+    qpsk(sys.argv[2], sys.argv[3])
 else:
-    print 'Usage: [bpsk | qpsk] <filename>'
+    print 'Usage: cs434_psk_carrier_demod_tyler_petrochko [bpsk | qpsk] <output_file> <symbols_file>'
     exit()
 
 
