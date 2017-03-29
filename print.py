@@ -1,8 +1,9 @@
 import numpy as np
+import scipy
 
 print 'BEGIN BPSK'
-bpsk = np.fromfile('bpsk_out', dtype=float)
-bpsk_sym = np.fromfile('bpsk_symbols_out', dtype=complex)
+bpsk = scipy.fromfile('bpsk_out', dtype=scipy.complex64)
+bpsk_sym = np.fromfile('bpsk_symbols_out', dtype=scipy.complex64)
 
 length = min(len(bpsk), len(bpsk_sym))
 
